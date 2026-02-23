@@ -1,4 +1,4 @@
-# machine-learning-from-scratch
+# machine_learning_from_scratch
 
 machine learning models implemented from scratch in Python.
 

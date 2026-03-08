@@ -7,7 +7,7 @@ class Linear_Regression_Gradient(Linear_Regression):
     def fit(self, 
             X: np.ndarray, 
             y: np.ndarray,
-            max_iter: int,
+            max_iters: int,
             lr: float,
             stats: bool = False) -> None:
         '''
@@ -38,7 +38,7 @@ class Linear_Regression_Gradient(Linear_Regression):
         b = np.random.uniform(-0.01, 0.01)
         n = y.size
 
-        for _ in range(max_iter):
+        for _ in range(max_iters):
             y_pred = X @ w + b
 
             error = y_pred - y

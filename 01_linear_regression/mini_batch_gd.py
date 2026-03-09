@@ -9,7 +9,9 @@ class Linear_Regression_Mini_Batch(Linear_Regression):
             lr: float,
             stats:bool = False) -> None:
         '''
-        Fit linear regression using 
+        Fit linear regression using mini-batch gradient descent.
+        Method shuffles data, divide it into batches and
+        update weights and bias max_iters times
 
         Parameters
         ----------
@@ -39,7 +41,7 @@ class Linear_Regression_Mini_Batch(Linear_Regression):
         for _ in range(max_iters):
             np.random.shuffle(index)
 
-            for i in range(0, n-batch_size, batch_size):
+            for i in range(0, n, batch_size):
                 batch_indices = index[i : i + batch_size]
                 # X_batch.size = (1, n_features), y_batch.size = (1, 1)
                 X_batch = X[batch_indices]

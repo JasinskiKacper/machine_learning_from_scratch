@@ -9,17 +9,17 @@ class Linear_Regression_Ridge(Linear_Regression):
             alpha: float) -> None:
         
         '''
-        Fit linear regression using the closed-form solution.
-        This method computes the optimal weights and bias using the formula:
-            (X^T @ X)w = X^T @ y
-        and solves for the linear model:
-            y_pred = X @ w + b
+        Fit linear regression using Ridge regression (L2 regularization).
+        This method augments X with a column of ones for the bias term
+        and adds a regularization term (punishment matrix) to penalize
+        large weights, reducing overfitting. The bias term is not penalized.
 
         Parameters
         ----------
         X : np.ndarray of shape (n_samples, n_features)
         y : np.ndarray of shape (n_samples, )
-        alpha : float how much punish big weights
+        alpha : float higher values increase the penalty on large weights
+            if alpha = 0,  ridge regression reduces to standard closed-form 
         '''
         if not isinstance(X, np.ndarray) or not isinstance(y, np.ndarray):
             raise TypeError

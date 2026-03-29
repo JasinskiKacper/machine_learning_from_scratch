@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from metrics import hinge_loss 
 
-class Hard_margin_GD(Support_Vector_Machine):
+class Hard_margin_SGD(Support_Vector_Machine):
     def fit(self,
             X: np.ndarray,
             y: np.ndarray,
@@ -14,7 +14,11 @@ class Hard_margin_GD(Support_Vector_Machine):
             lr: float,
             stats: bool) -> None:
         '''
-        
+        This method optimizes the Hinge Loss function with a Hard-margin approach.
+        In every iteration, it updates weights and bias based on a single data point.
+        If a point satisfies the margin condition (correctly classified and outside the margin),
+        only regularization is applied. Otherwise, the model is adjusted to reduce 
+        classification error.
 
         Parameters
         ----------
@@ -37,15 +41,16 @@ class Hard_margin_GD(Support_Vector_Machine):
 
         self.weights = np.random.randn(X.shape[1], 1) * 0.01 # (n_features, 1)
         self.bias = 0
+        lambda_hard = 0.001
 
         for _ in range(max_iters):
             for i in range(y.shape[0]):
                 if y[i] * (X[i] @ self.weights + self.bias) >= 1:
-                    dw = self.weights
+                    dw = 2 * lambda_hard * self.weights
                     db = 0
                 else:
-                    dw = self.weights - (y[i] * X[i].reshape(-1, 1))
-                    db = - y[i]
+                    dw = 2 * lambda_hard * self.weights - (y[i] * X[i].reshape(-1, 1))
+                    db = -y[i]
 
                 self.weights = self.weights - (lr * dw)
                 self.bias = self.bias - (lr * db)

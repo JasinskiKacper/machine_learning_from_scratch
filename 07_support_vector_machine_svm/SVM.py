@@ -5,7 +5,7 @@ class Support_Vector_Machine:
     def __init__(self):
         self.weights = None
         self.bias = None
-
+        self.alpha = None
     @abstractmethod
     def fit(self):
         pass

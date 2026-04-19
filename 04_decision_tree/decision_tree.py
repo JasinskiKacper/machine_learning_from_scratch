@@ -7,13 +7,18 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from metrics import gini
 
 class Node:
-    def __init__(self, feature: int, threshold: float|str, left: 'Node' = None, right: 'Node' = None, value: int = None):
+    def __init__(self, feature: int, 
+                 threshold: float|str, 
+                 gin: float,
+                 left: 'Node' = None, 
+                 right: 'Node' = None, 
+                 value: int = None):
         self.feature = feature
         self.threshold = threshold
-        self.gini = gini
+        self.gin = gin
         self.left = left
         self.right = right
-
+        self.value = value
 
 class DecisionTree:
     def __init__(self):
@@ -22,9 +27,8 @@ class DecisionTree:
 
     def fit(self, 
             X: pd.Series|pd.DataFrame, 
-            y: np.ndarray,
-            max_depth: int,
-            stats: bool) -> None:
+            y: pd.Series,
+            max_depth: int) -> None:
         if not isinstance(X, pd.Series) and not isinstance(X, pd.DataFrame):
             return None
         if not isinstance(y, pd.Series):
@@ -34,28 +38,54 @@ class DecisionTree:
         
         self.max_depth = int(max_depth)
 
-        if X.ndim == 1:
-            X = np.reshape(X, (-1, 1))
-        if y.ndim == 1:
-            y = np.reshape(y, (-1, 1))
+        self.root = self.build_tree(X, y)
 
-        features = X.columns
-        depth = 0
-        n = 0
-        # TODO Building tree
+    def predict(self, X: pd.DataFrame) -> list:
+        res = []
+        for idx, row in X.iterrows():
+            res.append(self.way(self.root, row))
+        return res
+    
+    def way(self, node: Node, row: pd.Series):
+        if node.value is not None:
+            return node.value
         
+        if isinstance(node.threshold, str):
+            if row[node.feature] == node.threshold:
+                return self.way(node.left, row)
+            else:
+                return self.way(node.right, row)
+        else:
+            if row[node.feature] <= node.threshold:
+                return self.way(node.left, row)
+            else:
+                return self.way(node.right, row)
 
+    def build_tree(self, X: pd.DataFrame, y: pd.Series, depth: int = 0) -> None:
+        if depth >= self.max_depth or len(y.unique()) == 1 or X.shape[0] <= 1:
+            node = Node(feature=None, threshold=None, gin=0)
+            node.value = y.value_counts().idxmax()
+            return node
+        
+        feature, threshold, gin = self.best_split(X, y)
+        node = Node(feature=feature, threshold=threshold, gin=gin)
 
+        X_left, y_left, X_right, y_right = self.split_dataset(X, y, feature, threshold)
+        
+        if len(y_left) == 0 or len(y_right) == 0:
+            node.value = y.value_counts().idxmax()
+            return node
 
+        node.left = self.build_tree(X_left, y_left, depth=depth+1)
+        node.right = self.build_tree(X_right, y_right, depth=depth+1)
 
-    def build_tree(self, X: pd.DataFrame, y: np.ndarray) -> None:
-        pass
+        return node
 
     def split_left_right(self,
                         feature: pd.Series, 
                         y: pd.Series, 
                         condition: str|int) -> tuple[list, list]:
-        if len(feature) != len(y):
+        if feature.shape[0] != y.shape[0]:
             return None
     
         n = len(y)
@@ -63,33 +93,71 @@ class DecisionTree:
         right = []
         for i in range(n):
             if type(condition) == str:
-                if feature[i] == condition:
-                    left.append(y[i])
+                if feature.iloc[i] == condition:
+                    left.append(y.iloc[i])
                 else:
-                    right.append(y[i])
+                    right.append(y.iloc[i])
 
             else:
-                if feature[i] <= condition:
-                    left.append(y[i])
+                if feature.iloc[i] <= condition:
+                    left.append(y.iloc[i])
                 else:
-                    right.append(y[i])
+                    right.append(y.iloc[i])
 
         return (pd.Series(left), pd.Series(right), n)
     
+    def split_dataset(self,
+                      X: pd.DataFrame,
+                      y: pd.Series,
+                      feature_name: str,
+                      threshold: str|float) -> tuple:
+
+        X_left = []
+        y_left = []
+        X_right = []
+        y_right = []
+
+        for idx, row in X.iterrows():
+            if type(threshold) == str:
+                if row[feature_name] == threshold:
+                    X_left.append(row)
+                    y_left.append(y.loc[idx])
+                else:
+                    X_right.append(row)
+                    y_right.append(y.loc[idx])
+
+            else:
+                if row[feature_name] <= threshold:
+                    X_left.append(row)
+                    y_left.append(y.loc[idx])
+                else:
+                    X_right.append(row)
+                    y_right.append(y.loc[idx])
+
+        X_left = pd.DataFrame(X_left).reset_index(drop=True)
+        y_left = pd.Series(y_left).reset_index(drop=True)
+        X_right = pd.DataFrame(X_right).reset_index(drop=True)
+        y_right = pd.Series(y_right).reset_index(drop=True)
+
+        return (X_left, y_left, X_right, y_right)
+    
     def best_split(self,
                    X: pd.DataFrame,
-                   y: pd.Series) -> None:
+                   y: pd.Series) -> tuple:
         
         min_gini = []
+        thresholds = []
         features = X.columns
         
-        # TODO
-        for feature in range(len(features)):
-            if isinstance(X[feature].iloc[0], str):
-                pass
-            else:
-                pass
+        for feature in features:
+            thr, gin = self.best_threshold(X[feature], y)
+            
+            thresholds.append(thr)
+            min_gini.append(gin)
 
+        idx = np.argmin(min_gini)
+
+        return (features[idx], thresholds[idx], min_gini[idx])
 
     def best_threshold(self,
                        feature: pd.Series,

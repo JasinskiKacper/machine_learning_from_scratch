@@ -3,7 +3,21 @@ import pandas as pd
 from naive_bayes import Naive_Bayes
 
 class Multinomial_nb(Naive_Bayes):
+    def __init__(self):
+        self.unique = None
+        self.log_prior_spam = None
+        self.log_prior_ham = None
+        self.log_likelihood_spam = None
+        self.log_likelihood_ham = None
+    
     def vectorizer(self, X: pd.Series) -> np.ndarray:
+        '''
+        Creates a vocabulary of unique words and generates a feature matrix.
+
+        Parameters
+        ----------
+        X : pd.Series of strings (SMS messages) to be processed.
+        '''
         unique = {}
         col = 0
 
@@ -29,11 +43,13 @@ class Multinomial_nb(Naive_Bayes):
             X: pd.Series,
             y: pd.Series) -> None:
         '''
-        
+        Trains the Multinomial Naive Bayes model by 
+        calculating log-priors and log-likelihoods.
+
         Parameters
         ----------
-        X: np.ndarray of shape (n_samples, n_features)
-        y: np.ndarray of shape (n_samples, 1)
+        X : pd.Series consisting of SMS messages.
+        y : pd.Series corresponding to each message 'spam' or 'ham'.
         '''
         if not isinstance(X, pd.Series) or not isinstance(y, pd.Series):
             return None
@@ -75,3 +91,36 @@ class Multinomial_nb(Naive_Bayes):
         self.log_prior_ham = np.log(P_ham)
         self.log_likelihood_spam = np.log(np.array(P_words_spam))
         self.log_likelihood_ham = np.log(np.array(P_words_ham))
+
+    def predict(self, X: str|pd.Series) -> str|list:
+        '''
+        Predicts the class label for the given input.
+
+        Parameters
+        ----------
+        X : str or pd.Series of strings to classify.
+        '''
+        if isinstance(X, str):
+            return self._predict(X)
+        elif isinstance(X, pd.Series):
+            return [self._predict(sms) for sms in X]
+
+    def _predict(self, X: str) -> str:
+        '''
+        Helper method to perform prediction on a single string.
+
+        Parameters
+        ----------
+        X : str SMS message to be classified.
+        '''
+        result_spam = self.log_prior_spam
+        result_ham = self.log_prior_ham
+        words = X.lower().split()
+        for word in words:
+            result_ham += self.log_likelihood_ham[self.unique[word]]
+            result_spam += self.log_likelihood_spam[self.unique[word]]
+
+        if result_spam > result_ham:
+            return 'spam'
+        else:
+            return 'ham'

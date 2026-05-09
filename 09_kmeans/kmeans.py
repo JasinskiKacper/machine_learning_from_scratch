@@ -11,6 +11,14 @@ class Kmeans:
         pass
 
     def predict(self, X: np.ndarray) -> list:
+        '''
+        Predict the closest cluster for each sample in X.
+
+        Parameters
+        ----------
+        X: np.ndarray of shape (n_samples, n_features) or (n_features,)
+            Data to predict cluster labels for.
+        '''
         distances = []
 
         if X.ndim == 1:
@@ -34,8 +42,3 @@ class Kmeans:
             label.append(distances.index(np.min(distances)))
         
         return label
-                
-                    
-
-
-        

@@ -8,12 +8,17 @@ class Standard_Kmeans(Kmeans):
             k: int,
             max_iter: int) -> None:
         '''
-        
+        Fit standard K-Means model to data using Lloyd s algorithm.
+        Initializes centroids randomly, then alternates between assigning
+        each point to the nearest centroid and updating centroids to the
+        mean of assigned points. Converges when centroids stop moving
+        or max_iter is reached.
 
         Parameters
         ----------
         X: np.ndarray of shape (n_samples, n_features)
-        k : int amount of clusters
+        k: int number of clusters
+        max_iter: int maximum number of iterations
         '''
         if not isinstance(X, np.ndarray):
             return None
@@ -57,7 +62,9 @@ class Standard_Kmeans(Kmeans):
 
                 new_centroids.append(means)
 
-            new_centroids
+            if np.allclose(centroids, new_centroids):
+                break
+            centroids = new_centroids
 
         self.centroid = new_centroids
         self.labels = labels

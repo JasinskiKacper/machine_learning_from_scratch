@@ -12,7 +12,8 @@ class Multinomial_nb(Naive_Bayes):
     
     def vectorizer(self, X: pd.Series) -> np.ndarray:
         '''
-        Creates a vocabulary of unique words and generates a feature matrix.
+        Creates a vocabulary of unique words and encodes
+        messages into a bag of words feature matrix.
 
         Parameters
         ----------
@@ -115,10 +116,13 @@ class Multinomial_nb(Naive_Bayes):
         '''
         result_spam = self.log_prior_spam
         result_ham = self.log_prior_ham
+
         words = X.lower().split()
+
         for word in words:
-            result_ham += self.log_likelihood_ham[self.unique[word]]
-            result_spam += self.log_likelihood_spam[self.unique[word]]
+            if word in self.unique:
+                result_ham += self.log_likelihood_ham[self.unique[word]]
+                result_spam += self.log_likelihood_spam[self.unique[word]]
 
         if result_spam > result_ham:
             return 'spam'

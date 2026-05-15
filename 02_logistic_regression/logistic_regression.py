@@ -30,7 +30,9 @@ class Logistic_Regression:
         X: np.ndarray of shape (n_samples, n_features)
         '''
         X = np.asarray(X).astype(float)
-        X = X.reshape((-1, 1))
+        if X.ndim == 1:
+            X = X.reshape((-1, 1))
+        
         z = (X @ self.weights) + self.bias
         return self.sigmoid(z)
     
@@ -43,6 +45,8 @@ class Logistic_Regression:
         X: np.ndarray of shape (n_samples, n_features)
         '''
         X = np.asarray(X).astype(float)
-        X = X.reshape((-1, 1))
+        if X.ndim == 1:
+            X = X.reshape((-1, 1))
+        
         z = (X @ self.weights) + self.bias
         return self.sigmoid(z) > 0.5

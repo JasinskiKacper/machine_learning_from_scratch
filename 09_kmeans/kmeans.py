@@ -1,7 +1,7 @@
 import numpy as np
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
-class Kmeans:
+class Kmeans(ABC):
     def __init__(self):
         self.centroid = None
         self.labels = None

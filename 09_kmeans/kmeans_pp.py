@@ -35,6 +35,7 @@ class Kmeans_pp(Kmeans):
                 min_dist = min(np.linalg.norm(i - c) ** 2 for c in centroids)
                 distances.append(min_dist)
 
+            distances = np.array(distances)
             probability = distances / np.sum(distances)
             idx_by_probability = np.random.choice(len(probability), p=probability)
 

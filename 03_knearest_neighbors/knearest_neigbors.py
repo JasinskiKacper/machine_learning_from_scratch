@@ -54,6 +54,7 @@ class K_nearest_neighbors:
             return None
         k = int(k)
 
+        X = np.asarray(X)
         if X.ndim == 1:
             X = np.reshape(X, shape=(-1, 1))
 

@@ -1,7 +1,7 @@
 import numpy as np
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
-class PCA:
+class PCA(ABC):
     def __init__(self):
         self.explained_ratio = None
 

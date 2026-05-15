@@ -32,11 +32,9 @@ class PCA_eigenvectors(PCA):
 
         # eigen values and vectors
         eig_val, eig_vec = np.linalg.eig(cov_matrix)
-        eigen = []
         
-        for val, vec in zip(eig_val, eig_vec):
-            eigen.append((val, vec))
-        eigen.sort(reverse=True)
+        eigen = list(zip(eig_val, eig_vec.T))
+        eigen.sort(key=lambda x: x[0], reverse=True)
 
         # transformation matrix
         W = []
@@ -49,7 +47,7 @@ class PCA_eigenvectors(PCA):
         X_pca = X_cen @ W
 
         # calculating ratios
-        eig_val = [val for val, vec in eigen]
-        self.explained_ratio = [val / np.sum(eig_val) for val in eig_val]
+        eig_vals_sorted = np.array([val for val, _ in eigen])
+        self.explained_ratio = eig_vals_sorted / eig_vals_sorted.sum()
 
         return X_pca

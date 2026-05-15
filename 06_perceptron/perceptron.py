@@ -69,5 +69,4 @@ class Perceptron:
         for Xi in X:
             output = np.sign(self.weights @ Xi.T + self.bias)
             res.append(output)
-
         return res

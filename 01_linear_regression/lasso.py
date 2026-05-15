@@ -20,7 +20,7 @@ class Linear_Regression_Lasso(Linear_Regression):
         X : np.ndarray of shape (n_samples, n_features)
         y : np.ndarray of shape (n_samples, )
         alpha : float higher values increase the penalty on large weights
-            if alpha = 0,  lasso reduces to cordinate descent
+            if alpha = 0,  lasso reduces to standard gd
         max_iter : int number of iterations
         lr : int controlling the step size of weights and bias updates
         stats : bool if True prints RMSE every iteration
@@ -34,21 +34,21 @@ class Linear_Regression_Lasso(Linear_Regression):
             y = np.reshape(y, (-1, 1))
 
         self.weights = np.random.rand(X.shape[1], 1)
-        self.bias = np.random.randint(-1, 1)
+        self.bias = 0.0
         n = X.shape[0]
 
         for _ in range(max_iters):
-            for i in range((self.weights).shape[0]):
-                y_pred = X @ self.weights + self.bias
+            y_pred = X @ self.weights + self.bias
+            error = y_pred - y
+            
+            dw = (2 / n) * (X.T @ error)
+            db = (2 / n) * np.sum(error)
+                
+            self.bias -= lr * db
+            w_temp = self.weights - lr * dw
 
-                error = y - y_pred
-                
-                dwi = - (1 / n) * np.sum(X[:, i].T @ error)
-                
-                (self.weights)[i] = np.sign((self.weights)[i] - lr * dwi) * np.max((abs((self.weights)[i] - lr * dwi)) - lr * alpha, 0)
-                
-            db = (1 / n) * np.sum(error)
-            self.bias = self.bias - (lr * db)
+            self.weights = np.sign(w_temp) * np.maximum(np.abs(w_temp) - lr * alpha, 0)
+            
             if stats:
                 print(f'RMSE: {RMSE(y, y_pred)}')
 

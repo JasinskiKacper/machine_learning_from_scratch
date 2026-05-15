@@ -46,7 +46,7 @@ class Soft_margin_SGD(Support_Vector_Machine):
                 mi = y[i] * si
 
                 if mi >= 1:
-                    dw = self.weights
+                    dw = 2 * C * self.weights
                     db = 0
                 else:
                     dw = self.weights - C * y[i] * X[i].reshape(-1, 1)
